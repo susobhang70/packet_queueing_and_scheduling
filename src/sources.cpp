@@ -16,6 +16,10 @@
 #define S2Len 50
 #define S3Len 100
 
+#define S1Num 100
+#define S2Num 1000
+#define S3Num 500
+
 static const char alphanum[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 "abcdefghijklmnopqrstuvwxyz";
@@ -56,32 +60,32 @@ void runBroadcast(int serverNumber, int milliseconds, int messageLen)
     broadcastAddress.sin_addr.s_addr = inet_addr(broadcastIP);  /* Broadcast IP address */
     broadcastAddress.sin_port = htons(PORT);                    /* Broadcast port. Htons converts to Big Endian - Left to Right. RTL is Little Endian */
 
-    /* Send periodically, endlessly */
-    while(1)
+    srand(time(0));
+    char *message = new char[messageLen];
+    int maxCount;
+
+    switch(serverNumber)
     {
-        // char *message = "Hello\n";              /* Hello message to broadcast */
-        // int messageLen = strlen(message);       /* Length of message to broadcast */
+        case 1:
+            message[0] = '1';
+            maxCount = S1Num;
+            break;
 
-        srand(time(0));
-        char *message = new char[messageLen];
-        switch(serverNumber)
-        {
-            case 1:
-                message[0] = '1';
-                break;
+        case 2:
+            message[0] = '2';
+            maxCount = S2Num;
+            break;
 
-            case 2:
-                message[0] = '2';
-                break;
+        case 3:
+            message[0] = '3';
+            maxCount = S3Num;
+            break;
+    }
 
-            case 3:
-                message[0] = '3';
-                break;
-        }
-
-        int i;
-
-        for(i = 1; i < messageLen; i++)
+    /* Send periodically, endlessly */
+    for(int count = 0; count < maxCount; count++)
+    {
+        for(int i = 1; i < messageLen; i++)
             message[i] = genRandom();
 
         /* Broadcast hello message every 5 seconds*/
