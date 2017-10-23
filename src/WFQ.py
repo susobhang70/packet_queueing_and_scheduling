@@ -62,15 +62,15 @@ def receive_packet():
 		m = s.recvfrom(MAXRECVSTRING)
 		if len(m) != 0:
 			# if A connection
-			if m[0] == '1':
+			if m[0][0] == '1':
 				A[A_count] = [(time.time() - start_time)*1000, m]
 				A_count += 1
 			# if B connection
-			elif m[0] == '2':
+			elif m[0][0] == '2':
 				B[B_count] = [(time.time() - start_time)*1000, m]
 				B_count += 1
 			# if C connection
-			elif m[0] == '3':
+			elif m[0][0] == '3':
 				C[C_count] = [(time.time() - start_time)*1000, m]
 				C_count += 1
 			# update count of messages received
@@ -85,19 +85,20 @@ def send_packet():
 	# counter of number of packets sent
 	count = 0
 	while True:
-		# get only the message, hence ()[1]
-		item = send_queue.get()[1]
-		
-		s = socket(AF_INET, SOCK_DGRAM)
-		s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-		s.sendto(item, ('127.255.255.255', SENDPORT))
+		# get only the message, hence ()[1][0]
+		if not send_queue.empty():
+			item = send_queue.get()[1][0]
 
-		count += 1
-		if(count == 1600):
-			break
+			s = socket(AF_INET, SOCK_DGRAM)
+			s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+			s.sendto(item, ('127.255.255.255', SENDPORT))
 
-		# The link rate is taken to be 1 byte/ms, so sleep for that much time
-		time.sleep(len(item) / 1000)
+			count += 1
+			if(count == 1600):
+				break
+
+			# The link rate is taken to be 1 byte/ms, so sleep for that much time
+			time.sleep(len(item) / 1000)
 
 def calc_round_num(prev_round_num, time_diff):
 	try:
@@ -141,7 +142,7 @@ def set_finish_num():
 				else:
 					# we know that finish number of previous index is already calculated, hence [A_cur-1][2]
 					finish_num = max(round_num,A[A_cur-1][2]) + (A_packetsize/A_weight)
-				value = value.append(finish_num)
+				value.append(finish_num)
 				# modify value of that key
 				A[A_cur] = value
 				if cur_finish_nums[0] == 0:
@@ -156,7 +157,7 @@ def set_finish_num():
 				else:
 					# we know that finish number of previous index is already calculated, hence [B_cur-1][2]
 					finish_num = max(round_num,B[B_cur-1][2]) + (B_packetsize/B_weight)
-				value = value.append(finish_num)
+				value.append(finish_num)
 				# modify value of that key
 				B[B_cur] = value
 				if cur_finish_nums[1] == 0:
@@ -171,7 +172,7 @@ def set_finish_num():
 				else:
 					# we know that finish number of previous index is already calculated, hence [C_cur-1][2]
 					finish_num = max(round_num,C[C_cur-1][2]) + (C_packetsize/C_weight)
-				value = value.append(finish_num)
+				value.append(finish_num)
 				# modify value of that key
 				C[C_cur] = value
 				if cur_finish_nums[2] == 0:
