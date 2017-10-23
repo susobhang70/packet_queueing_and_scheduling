@@ -40,6 +40,8 @@ int main(int argc, char *argv[])
     char recvString[MAXRECVSTRING + 1];
     int recvStringLen;
 
+    int count = 0;
+
     while(1)
     {
         if ((recvStringLen = recvfrom(sock, recvString, MAXRECVSTRING, 0, NULL, 0)) < 0)
@@ -47,8 +49,24 @@ int main(int argc, char *argv[])
             perror("recvfrom failed");
             exit(EXIT_FAILURE);
         }
-        recvString[recvStringLen] = '\0';
-        printf("%s\n", recvString);
+        
+        switch(recvString[0])
+        {
+            case '1':
+                printf("S1\n");
+                break;
+
+            case '2':
+                printf("S2\n");
+                break;
+
+            case '3':
+                printf("S3\n");
+                break;
+
+            default:
+                continue;
+        }
     }
     
     close(sock);
